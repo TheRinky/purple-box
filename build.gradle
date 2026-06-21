@@ -1,0 +1,49 @@
+plugins {
+	id 'java'
+}
+
+group = 'com.purplebox'
+version = '1.0.0'
+
+def runeLiteVersion = '1.12.29.1'
+
+repositories {
+	mavenLocal()
+	maven { url = 'https://repo.runelite.net' }
+	mavenCentral()
+}
+
+dependencies {
+	compileOnly "net.runelite:client:$runeLiteVersion"
+	runtimeOnly "net.runelite:injected-client:$runeLiteVersion"
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(11)
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = 11
+}
+
+tasks.register('runClient', JavaExec) {
+	group = 'runelite'
+	description = 'Run a RuneLite development client with Purple Box on the classpath.'
+	dependsOn tasks.jar
+	mainClass = 'net.runelite.client.RuneLite'
+	classpath = sourceSets.main.runtimeClasspath + configurations.compileClasspath
+	enableAssertions = true
+	args '--developer-mode'
+	doFirst {
+		def sideloadDir = file("${System.properties['user.home']}/.runelite/sideloaded-plugins")
+		sideloadDir.mkdirs()
+		sideloadDir.eachFileMatch(~/purple-box-.*\.jar/) { it.delete() }
+		copy {
+			from tasks.jar.archiveFile
+			into sideloadDir
+		}
+	}
+}

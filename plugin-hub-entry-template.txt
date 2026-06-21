@@ -1,0 +1,2 @@
+repository=https://github.com/YOUR_USERNAME/purple-box.git
+commit=FULL_40_CHARACTER_COMMIT_HASH
