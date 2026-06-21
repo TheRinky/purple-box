@@ -19,14 +19,28 @@ public class PurpleBoxOverlay extends Overlay{
   Rectangle clip=g.getClipBounds();int cx=clip.width/2,cy=clip.height/2;
   float pulse=(float)((Math.sin(elapsed/120_000_000.0)+1)/2);
   g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-  g.setComposite(AlphaComposite.SrcOver.derive(.42f));g.setColor(Color.BLACK);g.fillRoundRect(cx-190,cy-145,380,290,32,32);
+  g.setComposite(AlphaComposite.SrcOver.derive(.42f));g.setColor(Color.BLACK);g.fillOval(cx-210,cy+76,420,54);
   g.setComposite(AlphaComposite.SrcOver);
-  for(int r=5;r>=1;r--){g.setColor(new Color(150,35,255,18+(int)(pulse*12)));g.setStroke(new BasicStroke(r*6f));g.drawRoundRect(cx-175,cy-130,350,260,28,28);}
-  g.setStroke(new BasicStroke(3));g.setColor(reveal?new Color(245,210,90):new Color(195,95,255));g.drawRoundRect(cx-175,cy-130,350,260,28,28);
-  BufferedImage image=items.getImage(id);if(image!=null)g.drawImage(image,cx-72,cy-76,144,144,null);
-  g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,reveal?25:20));center(g,reveal?name:"?  ?  ?",cx,cy+105,reveal?new Color(255,225,110):Color.WHITE);
-  g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));center(g,reveal?"PURPLE ACQUIRED":"MYSTERY BOX",cx,cy-100,new Color(215,145,255));return null;
+  drawGlow(g,cx,cy,pulse,reveal);
+  drawCrate(g,cx,cy);
+  BufferedImage image=items.getImage(id);if(image!=null){g.setComposite(AlphaComposite.SrcOver.derive(reveal?1f:.92f));g.drawImage(image,cx-58,cy-84,116,116,null);g.setComposite(AlphaComposite.SrcOver);}
+  g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,reveal?25:20));center(g,reveal?name:"?  ?  ?",cx,cy+126,reveal?new Color(255,225,110):Color.WHITE);
+  g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,16));center(g,reveal?"PURPLE ACQUIRED":"RAID CRATE",cx,cy-118,new Color(215,145,255));return null;
  }
  private static int frame(long e,double p){return(int)(e/1_000_000.0/(55+390*p*p*p));}
  private static void center(Graphics2D g,String s,int x,int y,Color c){int w=g.getFontMetrics().stringWidth(s);g.setColor(new Color(0,0,0,210));g.drawString(s,x-w/2+2,y+2);g.setColor(c);g.drawString(s,x-w/2,y);}
+ private static void drawGlow(Graphics2D g,int cx,int cy,float pulse,boolean reveal){for(int r=7;r>=1;r--){g.setColor(new Color(reveal?245:150,reveal?205:35,reveal?75:255,18+(int)(pulse*12)));g.setStroke(new BasicStroke(r*7f));g.drawRoundRect(cx-178,cy-86,356,176,14,14);}}
+ private static void drawCrate(Graphics2D g,int cx,int cy){
+  int x=cx-185,y=cy-72,w=370,h=154;
+  g.setStroke(new BasicStroke(2));g.setColor(new Color(29,22,13,210));g.fillRoundRect(x-7,y+3,w+14,h+12,10,10);
+  GradientPaint lid=new GradientPaint(x,y,new Color(98,77,33),x,y+58,new Color(61,47,24));g.setPaint(lid);g.fillRoundRect(x,y,w,64,10,10);
+  GradientPaint body=new GradientPaint(x,y+52,new Color(82,61,29),x,y+h,new Color(46,34,20));g.setPaint(body);g.fillRoundRect(x,y+45,w,h-44,8,8);
+  g.setColor(new Color(33,24,14,120));for(int i=0;i<9;i++)g.drawLine(x+12,y+24+i*15,x+w-12,y+18+i*14);
+  g.setColor(new Color(132,104,48,150));for(int i=0;i<12;i++)g.drawLine(x+18+i*31,y+48,x+45+i*22,y+42);
+  metal(g,x+22,y+22,34,128);metal(g,x+w/2-17,y+18,34,134);metal(g,x+w-56,y+22,34,128);
+  g.setColor(new Color(48,39,28));g.fillRoundRect(cx-22,y+56,44,60,8,8);g.setColor(new Color(90,83,76));g.fillRoundRect(cx-14,y+66,28,42,6,6);g.setColor(new Color(28,25,23));g.fillRect(cx-4,y+88,8,14);
+  g.setColor(new Color(235,198,40));g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,54));center(g,"?",cx-74,y+52,new Color(238,201,38));center(g,"?",cx+74,y+52,new Color(238,201,38));
+  g.setStroke(new BasicStroke(3));g.setColor(new Color(25,20,14,190));g.drawRoundRect(x,y,w,h,10,10);g.setStroke(new BasicStroke(2));g.setColor(new Color(160,110,255,130));g.drawRoundRect(x+4,y+4,w-8,h-8,8,8);
+ }
+ private static void metal(Graphics2D g,int x,int y,int w,int h){g.setColor(new Color(39,39,38));g.fillRoundRect(x,y,w,h,8,8);g.setColor(new Color(105,105,100));g.fillRoundRect(x+5,y+7,w-10,h-14,6,6);g.setColor(new Color(165,165,155));g.fillRect(x+9,y+15,w-18,5);g.setColor(new Color(22,22,22,170));g.drawRoundRect(x,y,w,h,8,8);}
 }
