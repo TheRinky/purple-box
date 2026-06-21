@@ -19,8 +19,8 @@ public class PurpleBoxPlugin extends Plugin{
  @Inject private PurpleBoxOverlay overlay;
  @Inject private PurpleBoxSound sound;
  @Provides PurpleBoxConfig config(ConfigManager m){return m.getConfig(PurpleBoxConfig.class);}
- @Override protected void startUp(){overlays.add(overlay);commands.registerCommand("::purplebox",(m,s)->testRoll());}
- @Override protected void shutDown(){commands.unregisterCommand("::purplebox");overlays.remove(overlay);overlay.stop();sound.close();}
+ @Override protected void startUp(){overlays.add(overlay);commands.registerCommand("::purplebox",(m,s)->testRoll(),(i,s)->{testRoll();return true;});commands.registerCommand("!purplebox",(m,s)->testRoll(),(i,s)->{testRoll();return true;});}
+ @Override protected void shutDown(){commands.unregisterCommand("::purplebox");commands.unregisterCommand("!purplebox");overlays.remove(overlay);overlay.stop();sound.close();}
  @Subscribe public void onChatMessage(ChatMessage e){
   if(e.getType()!=ChatMessageType.GAMEMESSAGE&&e.getType()!=ChatMessageType.SPAM)return;
   String msg=Text.removeTags(e.getMessage()).toLowerCase(Locale.ROOT);
