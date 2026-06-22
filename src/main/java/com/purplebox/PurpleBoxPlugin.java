@@ -30,13 +30,14 @@ public class PurpleBoxPlugin extends Plugin{
  @Subscribe public void onChatMessage(ChatMessage e){
   if(e.getType()!=ChatMessageType.GAMEMESSAGE&&e.getType()!=ChatMessageType.SPAM)return;
   String msg=Text.removeTags(e.getMessage()).toLowerCase(Locale.ROOT);
-  for(Map.Entry<String,Integer>x:UNIQUES.entrySet())if(msg.contains(x.getKey())){roll(x.getValue(),title(x.getKey()));return;}
+  if(isLootMessage(msg))for(Map.Entry<String,Integer>x:UNIQUES.entrySet())if(msg.contains(x.getKey())){roll(x.getValue(),title(x.getKey()));return;}
   String extra=config.extraTrigger().trim().toLowerCase(Locale.ROOT);
   if(!extra.isEmpty()&&msg.contains(extra))roll(-1,"RAID UNIQUE");
  }
  private void testRoll(){List<Map.Entry<String,Integer>> x=new ArrayList<>(UNIQUES.entrySet());Collections.shuffle(x);roll(x.get(0).getValue(),title(x.get(0).getKey()));}
  private void roll(int id,String name){overlay.start(new ArrayList<>(UNIQUES.values()),id,name,config.duration());if(config.sound())sound.play();}
  private boolean isRewardChest(GameObject o){if(o==null)return false;ObjectComposition c=client.getObjectDefinition(o.getId());if(c==null)return false;String n=c.getName();if(n==null)return false;n=n.toLowerCase(Locale.ROOT);return n.contains("reward")&&n.contains("chest");}
+ private static boolean isLootMessage(String msg){return msg.contains("unique")||msg.contains("purple")||msg.contains("loot")||msg.contains("reward")||msg.contains("chest")||msg.contains("received")||msg.contains("obtained")||msg.contains("found")||msg.contains("drop");}
  private static String title(String s){StringBuilder b=new StringBuilder();for(String w:s.split(" ")){if(b.length()>0)b.append(' ');b.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));}return b.toString();}
  private static Map<String,Integer> uniques(){
   Map<String,Integer>i=new LinkedHashMap<>();
