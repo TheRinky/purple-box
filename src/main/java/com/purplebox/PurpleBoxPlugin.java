@@ -2,8 +2,10 @@ package com.purplebox;
 import com.google.inject.Provides;
 import java.util.*;
 import javax.inject.Inject;
-import net.runelite.api.ChatMessageType;
+import net.runelite.api.*;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.GameObjectDespawned;
+import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.*;
@@ -13,14 +15,18 @@ import net.runelite.client.util.Text;
 @PluginDescriptor(name="Purple Box",description="A mystery-box roll for raid purples",tags={"raids","purple","loot"})
 public class PurpleBoxPlugin extends Plugin{
  private static final Map<String,Integer> UNIQUES=uniques();
+ private final Set<GameObject> chests=new HashSet<>();
+ @Inject private Client client;
  @Inject private OverlayManager overlays;
  @Inject private ChatCommandManager commands;
  @Inject private PurpleBoxConfig config;
  @Inject private PurpleBoxOverlay overlay;
  @Inject private PurpleBoxSound sound;
  @Provides PurpleBoxConfig config(ConfigManager m){return m.getConfig(PurpleBoxConfig.class);}
- @Override protected void startUp(){overlays.add(overlay);commands.registerCommand("::purplebox",(m,s)->testRoll(),(i,s)->{testRoll();return true;});commands.registerCommand("!purplebox",(m,s)->testRoll(),(i,s)->{testRoll();return true;});}
- @Override protected void shutDown(){commands.unregisterCommand("::purplebox");commands.unregisterCommand("!purplebox");overlays.remove(overlay);overlay.stop();sound.close();}
+ @Override protected void startUp(){overlay.setAnchors(chests);overlays.add(overlay);commands.registerCommand("::purplebox",(m,s)->testRoll(),(i,s)->{testRoll();return true;});commands.registerCommand("!purplebox",(m,s)->testRoll(),(i,s)->{testRoll();return true;});}
+ @Override protected void shutDown(){commands.unregisterCommand("::purplebox");commands.unregisterCommand("!purplebox");chests.clear();overlays.remove(overlay);overlay.stop();sound.close();}
+ @Subscribe public void onGameObjectSpawned(GameObjectSpawned e){GameObject o=e.getGameObject();if(isRewardChest(o))chests.add(o);}
+ @Subscribe public void onGameObjectDespawned(GameObjectDespawned e){chests.remove(e.getGameObject());}
  @Subscribe public void onChatMessage(ChatMessage e){
   if(e.getType()!=ChatMessageType.GAMEMESSAGE&&e.getType()!=ChatMessageType.SPAM)return;
   String msg=Text.removeTags(e.getMessage()).toLowerCase(Locale.ROOT);
@@ -30,6 +36,7 @@ public class PurpleBoxPlugin extends Plugin{
  }
  private void testRoll(){List<Map.Entry<String,Integer>> x=new ArrayList<>(UNIQUES.entrySet());Collections.shuffle(x);roll(x.get(0).getValue(),title(x.get(0).getKey()));}
  private void roll(int id,String name){overlay.start(new ArrayList<>(UNIQUES.values()),id,name,config.duration());if(config.sound())sound.play();}
+ private boolean isRewardChest(GameObject o){if(o==null)return false;ObjectComposition c=client.getObjectDefinition(o.getId());if(c==null)return false;String n=c.getName();if(n==null)return false;n=n.toLowerCase(Locale.ROOT);return n.contains("reward")&&n.contains("chest");}
  private static String title(String s){StringBuilder b=new StringBuilder();for(String w:s.split(" ")){if(b.length()>0)b.append(' ');b.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));}return b.toString();}
  private static Map<String,Integer> uniques(){
   Map<String,Integer>i=new LinkedHashMap<>();
